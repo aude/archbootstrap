@@ -8,6 +8,6 @@ Bootstrap Arch Linux from any POSIX shell.
 
 Wait, hold on. Hold on a second.
 
-Yep, you can actually bootstrap one of the world's largest distros with a couple lines of BASH.
+Yep, you can actually bootstrap one of the world's largest distros with a couple lines of shell.
 
-![holy shit](media/jg8ZYsmN3ywJq.gif)
+![Holy Shit!](media/jg8ZYsmN3ywJq.gif)
