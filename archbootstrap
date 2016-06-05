@@ -1,0 +1,14 @@
+#!/bin/sh
+
+if [ -z "$1" ]; then
+	echo "usage: $(basename "$0") root" >&2
+	exit 1
+fi
+
+root=$1
+mirror=https://mirrors.kernel.org/archlinux/
+archive=$(curl -s "${mirror}iso/latest/" | grep -o "archlinux-bootstrap-[0-9]\{4\}\.[0-9]\{2\}\.[0-9]\{2\}-$(uname -m).tar.gz" | head -n1)
+
+mkdir -p "$root"
+
+curl -# "${mirror}iso/latest/$archive" | tar xz -C "$root" --strip-components 1
