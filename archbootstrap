@@ -1,0 +1,73 @@
+#!/bin/sh
+
+usage() {
+	cat <<EOF
+usage:	archbootstrap [options] root
+
+	-a <arch>
+	-c <cachedir>
+	-n no-cache
+	-h help
+	-i show post-install ideas
+	-m <mirror>
+EOF
+}
+
+is_root() {
+	[ "$(id -u)" = 0 ]
+}
+
+while getopts 'a:c:him:' opt; do
+	case "$opt" in
+		a) arch=$OPTARG;;
+		c) cachedir=$OPTARG;;
+		h) usage; exit;;
+		i) show_ideas=true;;
+		m) mirror=$OPTARG;;
+		*) usage >&2; exit 1;;
+	esac
+done
+shift $((OPTIND - 1))
+
+if [ $# -ne 1 ]; then
+	usage >&2
+	exit 1
+fi
+
+root=$1
+arch=${arch-$(uname -m)}
+if is_root; then cachedir=${cachedir-/var/cache/archbootstrap}; else cachedir=${cachedir-${XDG_CACHE_HOME-$HOME/.cache/archbootstrap}}; fi
+show_ideas=${show_ideas-false}
+mirror=${mirror-https://mirrors.kernel.org/archlinux/}
+archive=$cachedir/$(
+	wget --quiet --output-document - "${mirror}iso/latest/" | \
+	grep --only-matching "archlinux-bootstrap-[0-9]\{4\}\.[0-9]\{2\}\.[0-9]\{2\}-$arch.tar.gz" | \
+	head -n1)
+
+mkdir -p "$cachedir"
+
+wget --quiet --show-progress --continue --output-document "$archive" "${mirror}iso/latest/$(basename "$archive")"
+wget --quiet --show-progress --continue --output-document "$archive.sig" "${mirror}iso/latest/$(basename "$archive").sig"
+
+gpg --verify "$archive.sig" "$archive" || exit $?
+
+mkdir -p "$root"
+tar xf "$archive" -C "$root" --strip-components 1
+
+if $show_ideas; then
+echo
+cat <<EOF
+post-install ideas:
+
+	sed -i 's/^CheckSpace/#CheckSpace/' /etc/pacman.conf
+	echo 'Server = $mirror\$repo/os/\$arch' > /etc/pacman.d/mirrorlist
+	echo 'en_US.UTF-8 UTF-8' > /etc/locale.gen
+	echo LANG="en_US.UTF-8" > /etc/locale.conf
+	ln -s /usr/share/zoneinfo/UTC /etc/localtime
+
+	pacman-key --init
+	pacman-key --populate archlinux
+	pacman -Syu --needed base --ignore=linux
+	locale-gen
+EOF
+fi
