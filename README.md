@@ -13,7 +13,7 @@ Yep, you can actually bootstrap one of the world's largest distros with a onelin
 
 ---
 
-Alternatively, you can use the `archbootstrap` script:
+Alternatively, you can use `archbootstrap`:
 
 	$ archbootstrap ./arch
 	# archbootstrap /var/lib/machines/arch
@@ -27,7 +27,7 @@ Alternatively, you can use the `archbootstrap` script:
 
 		-a <arch>
 		-c <cachedir>
-		-n no-cache
 		-h help
 		-i show post-install ideas
 		-m <mirror>
+		-n no-cache

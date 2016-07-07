@@ -6,29 +6,49 @@ usage:	archbootstrap [options] root
 
 	-a <arch>
 	-c <cachedir>
-	-n no-cache
 	-h help
 	-i show post-install ideas
 	-m <mirror>
+	-n no-cache
 EOF
 }
 
 is_root() {
-	[ "$(id -u)" = 0 ]
+	[ "$(id -u)" = '0' ]
 }
 
-while getopts 'a:c:him:' opt; do
+use_cache() {
+	[ "$no_cache" != 'true' ]
+}
+
+show_ideas() {
+	[ "$ideas" = 'true' ]
+}
+
+cleanup() {
+	# delete cache directory if it is a tempdir
+	if ! use_cache; then
+		if [ -d "$cachedir" ]; then
+			rm -r "$cachedir"
+		fi
+	fi
+}
+trap cleanup EXIT
+
+while getopts 'a:c:him:n' opt; do
 	case "$opt" in
 		a) arch=$OPTARG;;
 		c) cachedir=$OPTARG;;
 		h) usage; exit;;
-		i) show_ideas=true;;
+		i) ideas=true;;
 		m) mirror=$OPTARG;;
+		n) no_cache=true;;
 		*) usage >&2; exit 1;;
 	esac
 done
 shift $((OPTIND - 1))
 
+# accept one argument
 if [ $# -ne 1 ]; then
 	usage >&2
 	exit 1
@@ -36,8 +56,15 @@ fi
 
 root=$1
 arch=${arch-$(uname -m)}
-if is_root; then cachedir=${cachedir-/var/cache/archbootstrap}; else cachedir=${cachedir-${XDG_CACHE_HOME-$HOME/.cache/archbootstrap}}; fi
-show_ideas=${show_ideas-false}
+if use_cache; then
+	if is_root; then
+		cachedir=${cachedir-/var/cache/archbootstrap}
+	else
+		cachedir=${cachedir-${XDG_CACHE_HOME-$HOME/.cache/archbootstrap}}
+	fi
+else
+	cachedir=$(mktemp -d)
+fi
 mirror=${mirror-https://mirrors.kernel.org/archlinux/}
 archive=$cachedir/$(
 	wget --quiet --output-document - "${mirror}iso/latest/" | \
@@ -54,7 +81,7 @@ gpg --verify "$archive.sig" "$archive" || exit $?
 mkdir -p "$root"
 tar xf "$archive" -C "$root" --strip-components 1
 
-if $show_ideas; then
+if show_ideas; then
 echo
 cat <<EOF
 post-install ideas:
