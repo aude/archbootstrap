@@ -1,7 +1,7 @@
 archbootstrap
 =============
 
-Bootstrap Arch Linux from BASH:
+Let's bootstrap Arch Linux from BASH:
 
 	$ curl -\# https://mirrors.kernel.org/archlinux/iso/latest/archlinux-bootstrap-$(date +%Y.%m.01)-$(uname -m).tar.gz | tar xz --strip-components 1 -C '/path/to/install/directory'
 
