@@ -11,7 +11,7 @@ Yep, you can actually bootstrap one of the world's largest distros with a onelin
 
 ![Holy Shit!](media/jg8ZYsmN3ywJq.gif)
 
----
+-------------
 
 Alternatively, you can use `archbootstrap`:
 
