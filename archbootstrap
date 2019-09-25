@@ -60,7 +60,7 @@ if use_cache; then
 	if is_root; then
 		cachedir=${cachedir-/var/cache/archbootstrap}
 	else
-		cachedir=${cachedir-${XDG_CACHE_HOME-$HOME/.cache/archbootstrap}}
+		cachedir=${cachedir-${XDG_CACHE_HOME-$HOME/.cache}/archbootstrap}
 	fi
 else
 	cachedir=$(mktemp -d)
